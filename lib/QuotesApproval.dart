@@ -16,10 +16,9 @@ import 'package:intl/intl.dart';
 import 'QuotesApprovalDetail.dart';
 import 'constant.dart';
 import 'dashboard.dart';
-import 'enquiryPage.dart';
 
 class QuotesApproval extends StatefulWidget {
-  String token, baseurl;
+  final String token, baseurl;
 
   QuotesApproval({Key key, this.token, this.baseurl}) : super(key: key);
 
@@ -38,7 +37,6 @@ class CustomSliverChildBuilderDelegate extends SliverChildBuilderDelegate
   @override
   int get childCount => _paginatedProductData.length;
 
-  @override
   int get rowCount => _products.length;
   var rowsPerPage = 10;
   @override
@@ -52,7 +50,7 @@ class CustomSliverChildBuilderDelegate extends SliverChildBuilderDelegate
     _paginatedProductData =
     _products.getRange(startIndex, endIndex).toList(growable: false);
     notifyListeners();
-    return true as Future<bool>;
+    return true;
   }
   /*Future<bool> handlePageChange(int oldPageIndex, int newPageIndex,
       int startRowIndex, int rowsPerPage) async {
@@ -165,7 +163,7 @@ class QuotesData extends State<QuotesApproval> {
         throw Exception("Failed to Load Names");
       }
     });
-
+    print(response);
     if (mounted)
       setState(() {
         print("fetched");
@@ -175,8 +173,8 @@ class QuotesData extends State<QuotesApproval> {
 
   ForwardModel forward;
 
-  Future<ForwardModel> getforward(int id) async {
-    _showMyDialog(id);
+  Future<ForwardModel> getForward(int id) async {
+   await _showMyDialog(id);
   }
 
   Future<void> forwardAPI(int id) async {
@@ -215,7 +213,7 @@ class QuotesData extends State<QuotesApproval> {
         throw Exception("Failed to Load Names");
       }
     });
-
+    print(response);
     if (mounted)
       setState(() {
         print("fetched");
