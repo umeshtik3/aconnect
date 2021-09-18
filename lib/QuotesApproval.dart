@@ -83,7 +83,7 @@ class QuotesData extends State<QuotesApproval> {
   DateTime selectedDateFrom = DateTime.now();
   var selectedDatefrom, selectedDateto;
   int pageno = 0;
-  int totalcount;
+  int totalCount;
   bool showLoadingIndicator = false;
   bool forwardbtn_visible = true;
   PagingProductRepository pagingProductRepository = PagingProductRepository();
@@ -141,12 +141,12 @@ class QuotesData extends State<QuotesApproval> {
           forwardbtn_visible = false;
         }
         if (response.headers.keys.contains('x-total-count')) {
-          totalcount = int.parse(response.headers['x-total-count']);
+          totalCount = int.parse(response.headers['x-total-count']);
           print(response.headers['x-total-count']);
         }
 
-        if (totalcount > Constants.ITEM_PER_PAGE &&
-            _products.length != totalcount) {
+        if (totalCount > Constants.ITEM_PER_PAGE &&
+            _products.length != totalCount) {
           pageno++;
           if (valueData == null) {
             fetch(pageno, "E", searchQuotesController);
@@ -656,7 +656,7 @@ class QuotesData extends State<QuotesApproval> {
                                     },
                                     delegate: CustomSliverChildBuilderDelegate(
                                         indexBuilder)
-                                      ..addListener(rebuildList),pageCount: _products.length.toDouble(),)),
+                                      ..addListener(rebuildList),pageCount: _products.length.toDouble()/Constants.ITEM_PER_PAGE)),
                       ),
                     ]),
               ),
