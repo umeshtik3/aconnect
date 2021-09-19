@@ -707,7 +707,7 @@ class QuotesData extends State<Quotes> {
                                     },
                                     delegate: CustomSliverChildBuilderDelegate(
                                         indexBuilder)
-                                      ..addListener(rebuildList), pageCount:_products.length.toDouble(),)),
+                                      ..addListener(rebuildList), pageCount:_products.length.toDouble()/Constants.ITEM_PER_PAGE)),
                       ),
                     ]),
               ),
