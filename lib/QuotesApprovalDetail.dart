@@ -979,13 +979,8 @@ class _QuotesApprovalDetail extends State<QuotesApprovalDetail> {
             backgroundColor: Colors.black,
             textColor: Colors.white,
             fontSize: 16.0);
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => QuotesApproval(
-                  token: '${widget.token}', baseurl: '${widget.baseurl}'),
-            ),
-            (e) => false);
+        Navigator.of(context).pop();
+        Navigator.of(context).pop('REFRESH_DATA');
       } else {
         print(response.body);
         throw Exception("Failed to Load Names");
@@ -1047,13 +1042,8 @@ class _QuotesApprovalDetail extends State<QuotesApprovalDetail> {
             backgroundColor: Colors.black,
             textColor: Colors.white,
             fontSize: 16.0);
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => QuotesApproval(
-                  token: '${widget.token}', baseurl: '${widget.baseurl}'),
-            ),
-            (e) => false);
+        Navigator.of(context).pop();
+        Navigator.of(context).pop('REFRESH_DATA');
       } else {
         print(response.body);
         throw Exception("Failed to Load Names");

@@ -30,8 +30,7 @@ class QuotesApproval extends StatefulWidget {
 List<PagingProduct> _paginatedProductData = [];
 List<PagingProduct> _products = [];
 
-class CustomSliverChildBuilderDelegate extends SliverChildBuilderDelegate
-    with DataPagerDelegate, ChangeNotifier {
+class CustomSliverChildBuilderDelegate extends SliverChildBuilderDelegate with DataPagerDelegate, ChangeNotifier {
   CustomSliverChildBuilderDelegate(builder) : super(builder);
 
   @override
@@ -39,19 +38,20 @@ class CustomSliverChildBuilderDelegate extends SliverChildBuilderDelegate
 
   int get rowCount => _products.length;
   var rowsPerPage = 10;
+
   @override
   Future<bool> handlePageChange(int oldPageIndex, int newPageIndex) async {
     int startIndex = newPageIndex * rowsPerPage;
     int endIndex = startIndex + rowsPerPage;
     if (endIndex > _products.length) {
-    endIndex = _products.length;
+      endIndex = _products.length;
     }
     // await Future.delayed(Duration(milliseconds: 2000));
-    _paginatedProductData =
-    _products.getRange(startIndex, endIndex).toList(growable: false);
+    _paginatedProductData = _products.getRange(startIndex, endIndex).toList(growable: false);
     notifyListeners();
     return true;
   }
+
   /*Future<bool> handlePageChange(int oldPageIndex, int newPageIndex,
       int startRowIndex, int rowsPerPage) async {
     int startIndex = newPageIndex * rowsPerPage;
@@ -84,6 +84,7 @@ class QuotesData extends State<QuotesApproval> {
   int totalCount;
   bool showLoadingIndicator = false;
   bool forwardbtn_visible = true;
+  bool loading = true;
   PagingProductRepository pagingProductRepository = PagingProductRepository();
   static const double dataPagerHeight = 65.0;
   var valueData, _selectedStatus;
@@ -95,10 +96,7 @@ class QuotesData extends State<QuotesApproval> {
     ;
     final response = await http
         .post(url,
-            headers: {
-              "Authorization": '${widget.token}',
-              "Content-Type": "application/json"
-            },
+            headers: {"Authorization": '${widget.token}', "Content-Type": "application/json"},
             body: jsonEncode({
               "dateFromFormat": selectDateFromController.text != null ? selectDateFromController.text : null,
               "dateToFormat": selectDateToController.text != null ? selectDateToController.text : null,
@@ -115,14 +113,10 @@ class QuotesData extends State<QuotesApproval> {
         var d = jsonDecode(response.body);
         for (var i = 0; i <= d.length - 1; i++) {
           pagingProductRepository.id.add(PagingProduct.fromJson(d[i]).id);
-          pagingProductRepository.locationDescription
-              .add(PagingProduct.fromJson(d[i]).locationDescription);
-          pagingProductRepository.customerName
-              .add(PagingProduct.fromJson(d[i]).customerName);
-          pagingProductRepository.itemDescription
-              .add(PagingProduct.fromJson(d[i]).itemDescription);
-          pagingProductRepository.createdDateFormat
-              .add(PagingProduct.fromJson(d[i]).createdDateFormat);
+          pagingProductRepository.locationDescription.add(PagingProduct.fromJson(d[i]).locationDescription);
+          pagingProductRepository.customerName.add(PagingProduct.fromJson(d[i]).customerName);
+          pagingProductRepository.itemDescription.add(PagingProduct.fromJson(d[i]).itemDescription);
+          pagingProductRepository.createdDateFormat.add(PagingProduct.fromJson(d[i]).createdDateFormat);
           pagingProductRepository.flag.add(PagingProduct.fromJson(d[i]).flag);
           // bloc.auth;
           // pagingProductRepository.ibSourcingMaster.add(PagingProduct.fromJson(d[i]).ibSourcingMaster);
@@ -143,8 +137,7 @@ class QuotesData extends State<QuotesApproval> {
           print(response.headers['x-total-count']);
         }
 
-        if (totalCount > Constants.ITEM_PER_PAGE &&
-            _products.length != totalCount) {
+        if (totalCount > Constants.ITEM_PER_PAGE && _products.length != totalCount) {
           pageno++;
           if (valueData == null) {
             fetch(pageno, "E", searchQuotesController);
@@ -174,18 +167,14 @@ class QuotesData extends State<QuotesApproval> {
   ForwardModel forward;
 
   Future<ForwardModel> getForward(int id) async {
-   await _showMyDialog(id);
+    await _showMyDialog(id);
   }
 
   Future<void> forwardAPI(int id) async {
-    var url =
-    Uri.parse('${widget.baseurl}' + Constants.DEANA_FORWARD_QUOTES + id.toString());
+    var url = Uri.parse('${widget.baseurl}' + Constants.DEANA_FORWARD_QUOTES + id.toString());
     final response = await http.get(
       url,
-      headers: {
-        "Authorization": '${widget.token}',
-        "Content-Type": "application/json"
-      },
+      headers: {"Authorization": '${widget.token}', "Content-Type": "application/json"},
     ).then((response) {
       if (response.statusCode == 200) {
         print("connection ok");
@@ -306,10 +295,15 @@ class QuotesData extends State<QuotesApproval> {
     super.initState();
     valueData = "F";
     _selectedStatus = "Pending";
-    fetch(pageno, "F", null);
-
+    // fetch(pageno, "F", null);
+    fetchAPI();
+    rebuildList();
     //AuthChangeNotifier();
     //  _paginatedProductData.ad
+  }
+
+  fetchAPI()async{
+    await fetch(pageno, "F", null);
   }
 
   void rebuildList() {
@@ -322,12 +316,10 @@ class QuotesData extends State<QuotesApproval> {
       final List<Widget> stackChildren = [];
 
       if (_products.isNotEmpty) {
-        stackChildren.add(ListView.custom(
-            childrenDelegate: CustomSliverChildBuilderDelegate(indexBuilder)));
+        stackChildren.add(ListView.custom(childrenDelegate: CustomSliverChildBuilderDelegate(indexBuilder)));
       }
 
-      if(stackChildren.length ==0)
-      {
+      if (stackChildren.length == 0) {
         if (showLoadingIndicator) {
           stackChildren.add(Container(
             color: Colors.black12,
@@ -350,6 +342,14 @@ class QuotesData extends State<QuotesApproval> {
     );
   }
 
+  countTotalNumberOfPages() {
+    var countOfPages = totalCount / Constants.ITEM_PER_PAGE;
+
+    double numberOfPages = countOfPages.ceil().toDouble();
+    loading = false;
+    return numberOfPages;
+  }
+
   @override
   Widget build(BuildContext context) {
     // var bloc = Provider.of<AuthChangeNotifier>(context,listen: false);
@@ -363,14 +363,13 @@ class QuotesData extends State<QuotesApproval> {
             icon: new Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => DashboardScreen(
-                    token: '${widget.token}', baseurl: '${widget.baseurl}'),
+                builder: (context) => DashboardScreen(token: '${widget.token}', baseurl: '${widget.baseurl}'),
               ));
             },
           ),
           title: Text('Quotes Approval'),
         ),
-        body: LayoutBuilder(builder: (context, constraint) {
+        body:  LayoutBuilder(builder: (context, constraint) {
           return Column(
             children: [
               Container(
@@ -457,22 +456,16 @@ class QuotesData extends State<QuotesApproval> {
                           style: TextStyle(color: Colors.black54, fontSize: 12),
                           controller: searchQuotesController,
                           decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 8),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                             hintText: 'Quotes ID',
-                            hintStyle:
-                                TextStyle(color: Colors.grey, fontSize: 12),
+                            hintStyle: TextStyle(color: Colors.grey, fontSize: 12),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                              borderSide:
-                                  BorderSide(color: Colors.grey, width: 1),
+                              borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                              borderSide: BorderSide(color: Colors.grey, width: 1),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                              borderSide:
-                                  BorderSide(color: Colors.grey, width: 1),
+                              borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                              borderSide: BorderSide(color: Colors.grey, width: 1),
                             ),
                           ),
                         )),
@@ -500,16 +493,13 @@ class QuotesData extends State<QuotesApproval> {
                                 print(searchQuotesController.text);
                                 _products.clear();
                                 pagingProductRepository.id.clear();
-                                pagingProductRepository.locationDescription
-                                    .clear();
+                                pagingProductRepository.locationDescription.clear();
                                 pagingProductRepository.customerName.clear();
                                 pagingProductRepository.itemDescription.clear();
-                                pagingProductRepository.createdDateFormat
-                                    .clear();
+                                pagingProductRepository.createdDateFormat.clear();
                                 _paginatedProductData = [];
                                 // _paginatedProductData.clear();
-                                fetch(pageno, valueData,
-                                    searchQuotesController.text);
+                                fetch(pageno, valueData, searchQuotesController.text);
                               });
                             }))
                   ],
@@ -548,22 +538,16 @@ class QuotesData extends State<QuotesApproval> {
                         onTap: () => _selectDateFrom(context),
                         // Re// fer step 3
                         decoration: InputDecoration(
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                           hintText: 'Date From',
-                          hintStyle:
-                              TextStyle(color: Colors.grey, fontSize: 12),
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 12),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10.0)),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1),
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                            borderSide: BorderSide(color: Colors.grey, width: 1),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10.0)),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1),
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                            borderSide: BorderSide(color: Colors.grey, width: 1),
                           ),
                         ),
                       ),
@@ -582,22 +566,16 @@ class QuotesData extends State<QuotesApproval> {
                         onTap: () => _selectDateTo(context),
                         // Re// fer step 3
                         decoration: InputDecoration(
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                           hintText: 'Date To',
-                          hintStyle:
-                              TextStyle(color: Colors.grey, fontSize: 12),
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 12),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10.0)),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1),
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                            borderSide: BorderSide(color: Colors.grey, width: 1),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10.0)),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1),
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                            borderSide: BorderSide(color: Colors.grey, width: 1),
                           ),
                         ),
                       ),
@@ -611,8 +589,7 @@ class QuotesData extends State<QuotesApproval> {
                     ? Text(
                         "No data found",
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 25, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                       )
                     : loadListView(constraint),
               ),
@@ -621,42 +598,33 @@ class QuotesData extends State<QuotesApproval> {
                 decoration: new BoxDecoration(
                   color: Colors.white,
                 ),
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        height: dataPagerHeight,
-                        child: SfDataPagerTheme(
-                            data: SfDataPagerThemeData(
-                              selectedItemColor:
-                                  Color.fromARGB(255, 86, 30, 101),
-                              itemBorderRadius: BorderRadius.circular(5),
-                            ),
-                            child: _products.length == 0
-                                ? Text("")
-                                : SfDataPager(
-                                   visibleItemsCount: _products.isEmpty
-                                        ? 0
-                                        : (_products.length <
-                                                Constants.ITEM_PER_PAGE
-                                            ? _products.length
-                                            : Constants.ITEM_PER_PAGE),
-                                    onPageNavigationStart: (pageIndex) {
-                                      setState(() {
-                                        showLoadingIndicator = true;
-                                      });
-                                    },
-                                    onPageNavigationEnd: (pageIndex) {
-                                      setState(() {
-                                        showLoadingIndicator = false;
-                                      });
-                                    },
-                                    delegate: CustomSliverChildBuilderDelegate(
-                                        indexBuilder)
-                                      ..addListener(rebuildList),pageCount: _products.length.toDouble()/Constants.ITEM_PER_PAGE)),
-                      ),
-                    ]),
+                child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [
+                  Container(
+                    height: dataPagerHeight,
+                    child: SfDataPagerTheme(
+                        data: SfDataPagerThemeData(
+                          selectedItemColor: Color.fromARGB(255, 86, 30, 101),
+                          itemBorderRadius: BorderRadius.circular(5),
+                        ),
+                        child: _products.length == 0
+                            ? Text("")
+                            :  SfDataPager(
+                                visibleItemsCount:
+                                    _products.isEmpty ? 0 : (_products.length < Constants.ITEM_PER_PAGE ? _products.length : Constants.ITEM_PER_PAGE),
+                                onPageNavigationStart: (pageIndex) {
+                                  setState(() {
+                                    showLoadingIndicator = true;
+                                  });
+                                },
+                                onPageNavigationEnd: (pageIndex) {
+                                  setState(() {
+                                    showLoadingIndicator = false;
+                                  });
+                                },
+                                delegate: CustomSliverChildBuilderDelegate(indexBuilder)..addListener(rebuildList),
+                                pageCount: countTotalNumberOfPages())),
+                  ),
+                ]),
               ),
             ],
           );
@@ -718,20 +686,13 @@ class QuotesData extends State<QuotesApproval> {
                               Container(
                                 width: MediaQuery.of(context).size.width * 0.1,
                                 alignment: Alignment.topLeft,
-                                child: Text(data.id.toString(),
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                        fontSize: 15)),
+                                child: Text(data.id.toString(), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black87, fontSize: 15)),
                               ),
                               Container(
                                 width: MediaQuery.of(context).size.width * 0.25,
                                 alignment: Alignment.topLeft,
                                 child: data.locationDescription != null
-                                    ? Text(data.locationDescription,
-                                        style: TextStyle(
-                                            color: Colors.black87,
-                                            fontSize: 13))
+                                    ? Text(data.locationDescription, style: TextStyle(color: Colors.black87, fontSize: 13))
                                     : Text(""),
                               ),
                               Container(
@@ -741,16 +702,8 @@ class QuotesData extends State<QuotesApproval> {
                                     ? RichText(
                                         text: TextSpan(children: [
                                         TextSpan(
-                                            text: 'REQ. DATE: ',
-                                            style: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w600)),
-                                        TextSpan(
-                                            text: data.createdDateFormat,
-                                            style: TextStyle(
-                                                color: Colors.black87,
-                                                fontSize: 11))
+                                            text: 'REQ. DATE: ', style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w600)),
+                                        TextSpan(text: data.createdDateFormat, style: TextStyle(color: Colors.black87, fontSize: 11))
                                       ]))
                                     : Text(""),
                               ),
@@ -760,8 +713,7 @@ class QuotesData extends State<QuotesApproval> {
                                 height: 20,
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
-                                    image:
-                                        AssetImage('assets/images/edit.png'),
+                                    image: AssetImage('assets/images/edit.png'),
                                   ),
                                 ),
                                 child: new FlatButton(
@@ -772,12 +724,7 @@ class QuotesData extends State<QuotesApproval> {
                                             context,
                                             new MaterialPageRoute(
                                                 builder: (context) =>
-                                                    new QuotesApprovalDetail(
-                                                        token:
-                                                            '${widget.token}',
-                                                        baseurl:
-                                                            '${widget.baseurl}',
-                                                        id: id)));
+                                                    new QuotesApprovalDetail(token: '${widget.token}', baseurl: '${widget.baseurl}', id: id)));
                                       }
                                     },
                                     child: null),
@@ -788,16 +735,12 @@ class QuotesData extends State<QuotesApproval> {
                         Container(
                           width: MediaQuery.of(context).size.width,
                           alignment: Alignment.topLeft,
-                          child: Text(data.customerName,
-                              style: TextStyle(
-                                  color: Colors.black87, fontSize: 13)),
+                          child: Text(data.customerName, style: TextStyle(color: Colors.black87, fontSize: 13)),
                         ),
                         Container(
                           width: MediaQuery.of(context).size.width,
                           alignment: Alignment.topLeft,
-                          child: Text(data.itemDescription,
-                              style: TextStyle(
-                                  color: Colors.black87, fontSize: 13)),
+                          child: Text(data.itemDescription, style: TextStyle(color: Colors.black87, fontSize: 13)),
                         ),
                       ],
                     ),
@@ -813,10 +756,8 @@ class QuotesData extends State<QuotesApproval> {
     return showDialog(
           context: context,
           builder: (context) => new AlertDialog(
-            title: new Text('Confirm Exit?',
-                style: new TextStyle(color: Colors.black, fontSize: 20.0)),
-            content: new Text(
-                'Are you sure you want to exit the app? Tap \'Yes\' to exit \'No\' to cancel.'),
+            title: new Text('Confirm Exit?', style: new TextStyle(color: Colors.black, fontSize: 20.0)),
+            content: new Text('Are you sure you want to exit the app? Tap \'Yes\' to exit \'No\' to cancel.'),
             actions: <Widget>[
               new FlatButton(
                 onPressed: () {

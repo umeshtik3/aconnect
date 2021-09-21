@@ -16,7 +16,6 @@ import 'constant.dart';
 import 'dashboard.dart';
 import 'enquiryPage.dart';
 
-
 class Quotes extends StatefulWidget {
   String token, baseurl;
 
@@ -30,8 +29,7 @@ class Quotes extends StatefulWidget {
 List<PagingProduct> _paginatedProductData = [];
 List<PagingProduct> _products = [];
 
-class CustomSliverChildBuilderDelegate extends SliverChildBuilderDelegate
-    with DataPagerDelegate, ChangeNotifier {
+class CustomSliverChildBuilderDelegate extends SliverChildBuilderDelegate with DataPagerDelegate, ChangeNotifier {
   CustomSliverChildBuilderDelegate(builder) : super(builder);
 
   @override
@@ -40,6 +38,7 @@ class CustomSliverChildBuilderDelegate extends SliverChildBuilderDelegate
   @override
   int get rowCount => _products.length;
   var rowsPerPage = 10;
+
   @override
   Future<bool> handlePageChange(int oldPageIndex, int newPageIndex) {
     int startIndex = newPageIndex * rowsPerPage;
@@ -48,12 +47,12 @@ class CustomSliverChildBuilderDelegate extends SliverChildBuilderDelegate
       endIndex = _products.length;
     }
     // await Future.delayed(Duration(milliseconds: 2000));
-    _paginatedProductData =
-        _products.getRange(startIndex, endIndex).toList(growable: false);
+    _paginatedProductData = _products.getRange(startIndex, endIndex).toList(growable: false);
     notifyListeners();
     return true as Future<bool>;
     //return super.handlePageChange(oldPageIndex, newPageIndex);
   }
+
   /*Future<bool> handlePageChange(int oldPageIndex, int newPageIndex,
       int startRowIndex, int rowsPerPage) async {
     int startIndex = newPageIndex * rowsPerPage;
@@ -97,10 +96,7 @@ class QuotesData extends State<Quotes> {
 
     final response = await http
         .post(url,
-            headers: {
-              "Authorization": '${widget.token}',
-              "Content-Type": "application/json"
-            },
+            headers: {"Authorization": '${widget.token}', "Content-Type": "application/json"},
             body: jsonEncode({
               "dateFromFormat": selectDateFromController.text != null ? selectDateFromController.text : null,
               "dateToFormat": selectDateToController.text != null ? selectDateToController.text : null,
@@ -117,14 +113,10 @@ class QuotesData extends State<Quotes> {
         var d = jsonDecode(response.body);
         for (var i = 0; i <= d.length - 1; i++) {
           pagingProductRepository.id.add(PagingProduct.fromJson(d[i]).id);
-          pagingProductRepository.locationDescription
-              .add(PagingProduct.fromJson(d[i]).locationDescription);
-          pagingProductRepository.customerName
-              .add(PagingProduct.fromJson(d[i]).customerName);
-          pagingProductRepository.itemDescription
-              .add(PagingProduct.fromJson(d[i]).itemDescription);
-          pagingProductRepository.createdDateFormat
-              .add(PagingProduct.fromJson(d[i]).createdDateFormat);
+          pagingProductRepository.locationDescription.add(PagingProduct.fromJson(d[i]).locationDescription);
+          pagingProductRepository.customerName.add(PagingProduct.fromJson(d[i]).customerName);
+          pagingProductRepository.itemDescription.add(PagingProduct.fromJson(d[i]).itemDescription);
+          pagingProductRepository.createdDateFormat.add(PagingProduct.fromJson(d[i]).createdDateFormat);
           pagingProductRepository.flag.add(PagingProduct.fromJson(d[i]).flag);
           // bloc.auth;
           // pagingProductRepository.ibSourcingMaster.add(PagingProduct.fromJson(d[i]).ibSourcingMaster);
@@ -145,8 +137,7 @@ class QuotesData extends State<Quotes> {
           print(response.headers['x-total-count']);
         }
 
-        if (totalcount > Constants.ITEM_PER_PAGE &&
-            _products.length != totalcount) {
+        if (totalcount > Constants.ITEM_PER_PAGE && _products.length != totalcount) {
           pageno++;
           if (valueData == null) {
             fetch(pageno, "E", searchQuotesController);
@@ -180,14 +171,10 @@ class QuotesData extends State<Quotes> {
   }
 
   Future<void> forwardAPI(int id) async {
-    var url =
-        Uri.parse('${widget.baseurl}' + Constants.DEANA_FORWARD_QUOTES + id.toString());
+    var url = Uri.parse('${widget.baseurl}' + Constants.DEANA_FORWARD_QUOTES + id.toString());
     final response = await http.get(
       url,
-      headers: {
-        "Authorization": '${widget.token}',
-        "Content-Type": "application/json"
-      },
+      headers: {"Authorization": '${widget.token}', "Content-Type": "application/json"},
     ).then((response) {
       if (response.statusCode == 200) {
         print("connection ok");
@@ -300,15 +287,25 @@ class QuotesData extends State<Quotes> {
     }
   }
 
+  double countTotalNumberOfPages() {
+    var countOfPages = totalcount / Constants.ITEM_PER_PAGE;
+    double numberOfPages = countOfPages.ceil().toDouble();
+    return numberOfPages;
+  }
+
   @override
   void initState() {
     super.initState();
     valueData = "E";
     _selectedStatus = "Pending";
-    fetch(pageno, "E", null);
+    fetchAPI();
 
     //AuthChangeNotifier();
     //  _paginatedProductData.ad
+  }
+
+  fetchAPI() async {
+    await fetch(pageno, "E", null);
   }
 
   void rebuildList() {
@@ -321,25 +318,23 @@ class QuotesData extends State<Quotes> {
       final List<Widget> stackChildren = [];
 
       if (_products.isNotEmpty) {
-        stackChildren.add(ListView.custom(
-            childrenDelegate: CustomSliverChildBuilderDelegate(indexBuilder)));
+        stackChildren.add(ListView.custom(childrenDelegate: CustomSliverChildBuilderDelegate(indexBuilder)));
       }
-      if(stackChildren.length ==0)
-        {
-          if (showLoadingIndicator) {
-            stackChildren.add(Container(
-              color: Colors.black12,
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-              child: Align(
-                alignment: Alignment.center,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                ),
+      if (stackChildren.length == 0) {
+        if (showLoadingIndicator) {
+          stackChildren.add(Container(
+            color: Colors.black12,
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            child: Align(
+              alignment: Alignment.center,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
               ),
-            ));
-          }
+            ),
+          ));
         }
+      }
 
       return stackChildren;
     }
@@ -362,8 +357,7 @@ class QuotesData extends State<Quotes> {
             icon: new Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => DashboardScreen(
-                    token: '${widget.token}', baseurl: '${widget.baseurl}'),
+                builder: (context) => DashboardScreen(token: '${widget.token}', baseurl: '${widget.baseurl}'),
               ));
             },
           ),
@@ -456,22 +450,16 @@ class QuotesData extends State<Quotes> {
                           style: TextStyle(color: Colors.black54, fontSize: 12),
                           controller: searchQuotesController,
                           decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 8),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                             hintText: 'Quotes ID',
-                            hintStyle:
-                                TextStyle(color: Colors.grey, fontSize: 12),
+                            hintStyle: TextStyle(color: Colors.grey, fontSize: 12),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                              borderSide:
-                                  BorderSide(color: Colors.grey, width: 1),
+                              borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                              borderSide: BorderSide(color: Colors.grey, width: 1),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                              borderSide:
-                                  BorderSide(color: Colors.grey, width: 1),
+                              borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                              borderSide: BorderSide(color: Colors.grey, width: 1),
                             ),
                           ),
                         )),
@@ -499,16 +487,13 @@ class QuotesData extends State<Quotes> {
                                 print(searchQuotesController.text);
                                 _products.clear();
                                 pagingProductRepository.id.clear();
-                                pagingProductRepository.locationDescription
-                                    .clear();
+                                pagingProductRepository.locationDescription.clear();
                                 pagingProductRepository.customerName.clear();
                                 pagingProductRepository.itemDescription.clear();
-                                pagingProductRepository.createdDateFormat
-                                    .clear();
+                                pagingProductRepository.createdDateFormat.clear();
                                 _paginatedProductData = [];
                                 // _paginatedProductData.clear();
-                                fetch(pageno, valueData,
-                                    searchQuotesController.text);
+                                fetch(pageno, valueData, searchQuotesController.text);
                               });
                             }))
                   ],
@@ -547,22 +532,16 @@ class QuotesData extends State<Quotes> {
                         onTap: () => _selectDateFrom(context),
                         // Re// fer step 3
                         decoration: InputDecoration(
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                           hintText: 'Date From',
-                          hintStyle:
-                              TextStyle(color: Colors.grey, fontSize: 12),
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 12),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10.0)),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1),
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                            borderSide: BorderSide(color: Colors.grey, width: 1),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10.0)),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1),
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                            borderSide: BorderSide(color: Colors.grey, width: 1),
                           ),
                         ),
                       ),
@@ -594,22 +573,16 @@ class QuotesData extends State<Quotes> {
                         onTap: () => _selectDateTo(context),
                         // Re// fer step 3
                         decoration: InputDecoration(
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                           hintText: 'Date To',
-                          hintStyle:
-                              TextStyle(color: Colors.grey, fontSize: 12),
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 12),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10.0)),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1),
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                            borderSide: BorderSide(color: Colors.grey, width: 1),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(10.0)),
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1),
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                            borderSide: BorderSide(color: Colors.grey, width: 1),
                           ),
                         ),
                       ),
@@ -647,11 +620,8 @@ class QuotesData extends State<Quotes> {
                             ),
                             onPressed: () {
                               setState(() {
-                                Navigator.of(context)
-                                    .pushReplacement(MaterialPageRoute(
-                                  builder: (context) => EnqiuryPage(
-                                      token: '${widget.token}',
-                                      baseurl: '${widget.baseurl}'),
+                                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                  builder: (context) => EnqiuryPage(token: '${widget.token}', baseurl: '${widget.baseurl}'),
                                 ));
                               });
                             }))
@@ -664,8 +634,7 @@ class QuotesData extends State<Quotes> {
                     ? Text(
                         "No data found",
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 25, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                       )
                     : loadListView(constraint),
               ),
@@ -674,42 +643,33 @@ class QuotesData extends State<Quotes> {
                 decoration: new BoxDecoration(
                   color: Colors.white,
                 ),
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        height: dataPagerHeight,
-                        child: SfDataPagerTheme(
-                            data: SfDataPagerThemeData(
-                              selectedItemColor:
-                                  Color.fromARGB(255, 86, 30, 101),
-                              itemBorderRadius: BorderRadius.circular(5),
-                            ),
-                            child: _products.length == 0
-                                ? Text("")
-                                : SfDataPager(
-                                 visibleItemsCount: _products.isEmpty
-                                        ? 0
-                                        : (_products.length <
-                                                Constants.ITEM_PER_PAGE
-                                            ? _products.length
-                                            : Constants.ITEM_PER_PAGE),
-                                    onPageNavigationStart: (pageIndex) {
-                                      setState(() {
-                                        showLoadingIndicator = true;
-                                      });
-                                    },
-                                    onPageNavigationEnd: (pageIndex) {
-                                      setState(() {
-                                        showLoadingIndicator = false;
-                                      });
-                                    },
-                                    delegate: CustomSliverChildBuilderDelegate(
-                                        indexBuilder)
-                                      ..addListener(rebuildList), pageCount:_products.length.toDouble()/Constants.ITEM_PER_PAGE)),
-                      ),
-                    ]),
+                child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [
+                  Container(
+                    height: dataPagerHeight,
+                    child: SfDataPagerTheme(
+                        data: SfDataPagerThemeData(
+                          selectedItemColor: Color.fromARGB(255, 86, 30, 101),
+                          itemBorderRadius: BorderRadius.circular(5),
+                        ),
+                        child: _products.length == 0
+                            ? Text("")
+                            : SfDataPager(
+                                visibleItemsCount:
+                                    _products.isEmpty ? 0 : (_products.length < Constants.ITEM_PER_PAGE ? _products.length : Constants.ITEM_PER_PAGE),
+                                onPageNavigationStart: (pageIndex) {
+                                  setState(() {
+                                    showLoadingIndicator = true;
+                                  });
+                                },
+                                onPageNavigationEnd: (pageIndex) {
+                                  setState(() {
+                                    showLoadingIndicator = false;
+                                  });
+                                },
+                                delegate: CustomSliverChildBuilderDelegate(indexBuilder)..addListener(rebuildList),
+                                pageCount: countTotalNumberOfPages())),
+                  ),
+                ]),
               ),
             ],
           );
@@ -771,20 +731,13 @@ class QuotesData extends State<Quotes> {
                               Container(
                                 width: MediaQuery.of(context).size.width * 0.1,
                                 alignment: Alignment.topLeft,
-                                child: Text(data.id.toString(),
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                        fontSize: 15)),
+                                child: Text(data.id.toString(), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black87, fontSize: 15)),
                               ),
                               Container(
                                 width: MediaQuery.of(context).size.width * 0.25,
                                 alignment: Alignment.topLeft,
                                 child: data.locationDescription != null
-                                    ? Text(data.locationDescription,
-                                        style: TextStyle(
-                                            color: Colors.black87,
-                                            fontSize: 13))
+                                    ? Text(data.locationDescription, style: TextStyle(color: Colors.black87, fontSize: 13))
                                     : Text(""),
                               ),
                               Container(
@@ -794,16 +747,8 @@ class QuotesData extends State<Quotes> {
                                     ? RichText(
                                         text: TextSpan(children: [
                                         TextSpan(
-                                            text: 'REQ. DATE: ',
-                                            style: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w600)),
-                                        TextSpan(
-                                            text: data.createdDateFormat,
-                                            style: TextStyle(
-                                                color: Colors.black87,
-                                                fontSize: 11))
+                                            text: 'REQ. DATE: ', style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w600)),
+                                        TextSpan(text: data.createdDateFormat, style: TextStyle(color: Colors.black87, fontSize: 11))
                                       ]))
                                     : Text(""),
                               ),
@@ -813,8 +758,7 @@ class QuotesData extends State<Quotes> {
                                 height: 20,
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
-                                    image:
-                                        AssetImage('assets/images/edit.png'),
+                                    image: AssetImage('assets/images/edit.png'),
                                   ),
                                 ),
                                 child: new FlatButton(
@@ -825,12 +769,7 @@ class QuotesData extends State<Quotes> {
                                             context,
                                             new MaterialPageRoute(
                                                 builder: (context) =>
-                                                    new QuotesDetail(
-                                                        token:
-                                                            '${widget.token}',
-                                                        baseurl:
-                                                            '${widget.baseurl}',
-                                                        id: id)));
+                                                    new QuotesDetail(token: '${widget.token}', baseurl: '${widget.baseurl}', id: id)));
                                       }
                                     },
                                     child: null),
@@ -838,14 +777,12 @@ class QuotesData extends State<Quotes> {
                               Visibility(
                                   visible: forwardbtn_visible,
                                   child: Container(
-                                    width: MediaQuery.of(context).size.width *
-                                        0.07,
+                                    width: MediaQuery.of(context).size.width * 0.07,
                                     alignment: Alignment.topRight,
                                     height: 20,
                                     decoration: BoxDecoration(
                                       image: DecorationImage(
-                                        image: AssetImage(
-                                            'assets/images/next.png'),
+                                        image: AssetImage('assets/images/next.png'),
                                       ),
                                     ),
                                     child: new FlatButton(
@@ -861,16 +798,12 @@ class QuotesData extends State<Quotes> {
                         Container(
                           width: MediaQuery.of(context).size.width,
                           alignment: Alignment.topLeft,
-                          child: Text(data.customerName,
-                              style: TextStyle(
-                                  color: Colors.black87, fontSize: 13)),
+                          child: Text(data.customerName, style: TextStyle(color: Colors.black87, fontSize: 13)),
                         ),
                         Container(
                           width: MediaQuery.of(context).size.width,
                           alignment: Alignment.topLeft,
-                          child: Text(data.itemDescription,
-                              style: TextStyle(
-                                  color: Colors.black87, fontSize: 13)),
+                          child: Text(data.itemDescription, style: TextStyle(color: Colors.black87, fontSize: 13)),
                         ),
                       ],
                     ),
@@ -886,10 +819,8 @@ class QuotesData extends State<Quotes> {
     return showDialog(
           context: context,
           builder: (context) => new AlertDialog(
-            title: new Text('Confirm Exit?',
-                style: new TextStyle(color: Colors.black, fontSize: 20.0)),
-            content: new Text(
-                'Are you sure you want to exit the app? Tap \'Yes\' to exit \'No\' to cancel.'),
+            title: new Text('Confirm Exit?', style: new TextStyle(color: Colors.black, fontSize: 20.0)),
+            content: new Text('Are you sure you want to exit the app? Tap \'Yes\' to exit \'No\' to cancel.'),
             actions: <Widget>[
               new FlatButton(
                 onPressed: () {
